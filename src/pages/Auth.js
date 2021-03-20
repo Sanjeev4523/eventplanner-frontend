@@ -1,10 +1,12 @@
 import React from "react";
+import AuthContext from "../context/auth-context";
 import "./Auth.css";
 
 const Auth = () => {
   const emailEl = React.useRef(null);
   const passwordEl = React.useRef(null);
   const [isLoginForm, setIsLoginForm] = React.useState(true);
+  const authContext = React.useContext(AuthContext);
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -51,7 +53,12 @@ const Auth = () => {
         return res.json();
       })
       .then((resData) => {
-        console.log(resData);
+        // console.log(resData);
+        if (resData.data.login) {
+          const { token, userId, tokenExpiration } = resData.data.login;
+        //   console.log(token, userId, tokenExpiration)
+          authContext.login(token, userId, tokenExpiration);
+        }
       })
       .catch((err) => {
         console.log("USER CREATION FAILED");
