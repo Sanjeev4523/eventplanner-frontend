@@ -16,6 +16,7 @@ const Events = () => {
   const dateElRef = React.useRef(null);
   const descriptionElRef = React.useRef(null);
   const authContext = React.useContext(AuthContext);
+  let isActive = true;
 
   const startCreateEventHandler = () => {
     setCreating(true);
@@ -56,8 +57,10 @@ const Events = () => {
         return res.json();
       })
       .then((resData) => {
-        console.log({ resData });
-        setEvents(resData.data.events);
+        console.log({ getchEvents: resData });
+        if (isActive) {
+          setEvents(resData.data.events);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -155,12 +158,54 @@ const Events = () => {
   };
 
   const bookEventHandler = () => {
-    console.log(selectedEvent);
-    setSelectedEvent(null);
+    if (!authContext.token) {
+      alert("LOGIN FIRST");
+      setSelectedEvent(null);
+      return;
+    }
+    const requestBody = {
+      query: `
+              mutation {
+                  bookEvent(eventId: "${selectedEvent._id}"){
+                      _id
+                      createdAt
+                      updatedAt
+                  }
+              }
+          `,
+    };
+
+    fetch("http://localhost:5000/graphql", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authContext.token}`,
+      },
+    })
+      .then((res) => {
+        if (![200, 201].includes(res.status)) {
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        console.log({ resData });
+        setSelectedEvent(null);
+      })
+      .catch((err) => {
+        console.log("BOOKING EVENT FAILED");
+        console.log(err);
+        setSelectedEvent(null);
+        // throw err;
+      });
   };
 
   React.useEffect(() => {
     fetchEvents();
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   return (
@@ -204,7 +249,7 @@ const Events = () => {
           <Modal
             title={selectedEvent.title}
             cancelText={"CANCEL"}
-            confirmText={"BOOK EVENT"}
+            confirmText={authContext.token ? "BOOK EVENT" : "LOGIN FIRST"}
             onCancel={modalCancelHandler}
             onConfirm={bookEventHandler}
           >
