@@ -1,12 +1,16 @@
 import React from "react";
 import Modal from "../components/Modal/Modal";
 import Backdrop from "../components/Backdrop/Backdrop";
+import Spinner from "../components/Spinner/Spinner";
 import AuthContext from "../context/auth-context";
+import EventList from "../components/Events/EventList/EventList";
 import "./Events.css";
 
 const Events = () => {
   const [creating, setCreating] = React.useState(false);
   const [events, setEvents] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [selectedEvent, setSelectedEvent] = React.useState(null);
   const titleElRef = React.useRef(null);
   const priceElRef = React.useRef(null);
   const dateElRef = React.useRef(null);
@@ -18,6 +22,7 @@ const Events = () => {
   };
 
   const fetchEvents = () => {
+    setLoading(true);
     const requestBody = {
       query: `
               query {
@@ -53,10 +58,12 @@ const Events = () => {
       .then((resData) => {
         console.log({ resData });
         setEvents(resData.data.events);
+        setLoading(false);
       })
       .catch((err) => {
         console.log("EVENT FTECHING FAILED");
         console.log(err);
+        setLoading(false);
         // throw err;
       });
   };
@@ -89,10 +96,6 @@ const Events = () => {
                       description
                       price
                       date
-                      creator {
-                        _id
-                        email
-                      }
                   }
               }
           `,
@@ -113,8 +116,27 @@ const Events = () => {
         return res.json();
       })
       .then((resData) => {
-        console.log({resData});
-        fetchEvents()
+        console.log({ resData });
+        const {
+          title,
+          price,
+          description,
+          _id,
+          date,
+        } = resData.data.createEvent;
+        setEvents((prevEvents) => {
+          const updatedEvents = prevEvents.concat({
+            _id,
+            title,
+            description,
+            date,
+            price,
+            creator: {
+              _id: authContext.userId,
+            },
+          });
+          return updatedEvents;
+        });
       })
       .catch((err) => {
         console.log("EVENT CREATION FAILED");
@@ -125,6 +147,16 @@ const Events = () => {
 
   const modalCancelHandler = () => {
     setCreating(false);
+    setSelectedEvent(null);
+  };
+
+  const showDetaillHandler = (eventId) => {
+    setSelectedEvent(events.find((e) => e._id === eventId));
+  };
+
+  const bookEventHandler = () => {
+    console.log(selectedEvent);
+    setSelectedEvent(null);
   };
 
   React.useEffect(() => {
@@ -133,12 +165,14 @@ const Events = () => {
 
   return (
     <>
+      {(creating || !!selectedEvent) && <Backdrop />}
       {creating && (
         <>
-          <Backdrop />
+          {/* <Backdrop /> */}
           <Modal
             title="Add Event"
-            enableCancel
+            cancelText={"CANCEL"}
+            confirmText={"CONFIRM"}
             enableConfirm
             onCancel={modalCancelHandler}
             onConfirm={modalConfirmHandler}
@@ -164,6 +198,24 @@ const Events = () => {
           </Modal>
         </>
       )}
+      {!!selectedEvent && (
+        <>
+          <Backdrop />
+          <Modal
+            title={selectedEvent.title}
+            cancelText={"CANCEL"}
+            confirmText={"BOOK EVENT"}
+            onCancel={modalCancelHandler}
+            onConfirm={bookEventHandler}
+          >
+            <h1>{selectedEvent.title}</h1>
+            <h2>{`$${selectedEvent.price} - ${new Date(
+              selectedEvent.date
+            ).toLocaleString()}`}</h2>
+            <p>{selectedEvent.description}</p>
+          </Modal>
+        </>
+      )}
       {authContext.token && (
         <div className="events-control">
           <p> Go On, make your own Events</p>
@@ -172,13 +224,15 @@ const Events = () => {
           </button>
         </div>
       )}
-      <ul className="events__list">
-        {events.map((event) => (
-          <li key={event._id} className="events__list-item">
-            {event.title}
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <Spinner />
+      ) : (
+        <EventList
+          events={events}
+          authUserId={authContext.userId}
+          viewDetail={showDetaillHandler}
+        />
+      )}
     </>
   );
 };

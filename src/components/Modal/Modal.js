@@ -9,14 +9,14 @@ const Modal = (props) => {
       </header>
       <section className="modal__content">{props.children}</section>
       <section className="modal__actions">
-        {props.enableCancel && (
+        {!!props.cancelText && (
           <button className="btn" onClick={props.onCancel}>
-            Cancel
+            {props.cancelText}
           </button>
         )}
-        {props.enableConfirm && (
+        {!!props.confirmText && (
           <button className="btn" onClick={props.onConfirm}>
-            Confirm
+            {props.confirmText}
           </button>
         )}
       </section>
