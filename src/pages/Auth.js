@@ -17,25 +17,33 @@ const Auth = () => {
     }
     let requestBody = {
       query: `
-            query {
-                login(email:"${email}", password: "${password}"){
+            query Login($email: String!, $password: String!) {
+                login(email:$email, password: $password){
                     userId
                     token
                     tokenExpiration
                 }
             }
         `,
+      variables: {
+        email,
+        password,
+      },
     };
     if (!isLoginForm) {
       requestBody = {
         query: `
-                  mutation {
-                      createUser(userInput: {email: "${email}", password: "${password}"}){
+                  mutation CreateUser($email: String!, $password: String!) {
+                      createUser(userInput: {email: $email, password: $password}){
                           _id
                           email
                       }
                   }
               `,
+        variables: {
+          email,
+          password,
+        },
       };
     }
 
@@ -56,7 +64,7 @@ const Auth = () => {
         // console.log(resData);
         if (resData.data.login) {
           const { token, userId, tokenExpiration } = resData.data.login;
-        //   console.log(token, userId, tokenExpiration)
+          //   console.log(token, userId, tokenExpiration)
           authContext.login(token, userId, tokenExpiration);
         }
       })
