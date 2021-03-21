@@ -2,10 +2,14 @@ import React from "react";
 import AuthContext from "../context/auth-context";
 import Spinner from "../components/Spinner/Spinner";
 import BookingList from "../components//Bookings/BookingList/BookingList";
+import BookingsChart from "../components/Bookings/BookingsChart/BookingsChart";
+import * as CONSTANTS from "../components/Bookings/constants";
+import BookingsControl from "../components/Bookings/BookingsControl/BookingsControl";
 
 const Bookings = () => {
   const [loading, setLoading] = React.useState(false);
   const [bookings, setBookings] = React.useState([]);
+  const [outputType, setOutputType] = React.useState(CONSTANTS.LIST);
   const authContext = React.useContext(AuthContext);
 
   const fetchBookings = () => {
@@ -100,6 +104,14 @@ const Bookings = () => {
       });
   };
 
+  const changeOutputTypeHandler = (outputType) => {
+    if (outputType === CONSTANTS.LIST) {
+      setOutputType(CONSTANTS.LIST);
+    } else {
+      setOutputType(CONSTANTS.CHART);
+    }
+  };
+
   React.useEffect(() => {
     fetchBookings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,8 +122,23 @@ const Bookings = () => {
       {loading ? (
         <Spinner />
       ) : (
-        <BookingList bookings={bookings} onDelete={deleteBookingHandler} />
-      )}{" "}
+        <>
+          <BookingsControl
+            activeOutputType={outputType}
+            onChange={changeOutputTypeHandler}
+          />
+          <div>
+            {outputType === CONSTANTS.LIST ? (
+              <BookingList
+                bookings={bookings}
+                onDelete={deleteBookingHandler}
+              />
+            ) : (
+              <BookingsChart bookings={bookings} />
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
