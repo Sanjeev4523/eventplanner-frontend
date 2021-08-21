@@ -5,6 +5,8 @@ Bootstrapped with create-reacta-app
 
 Created by Following this tutorial -> [https://youtube.com/playlist?list=PL55RiY5tL51rG1x02Yyj93iypUuHYXcB_](https://youtube.com/playlist?list=PL55RiY5tL51rG1x02Yyj93iypUuHYXcB_)
 
+You can find Backend here -> [https://github.com/Sanjeev4523/eventplanner-backend](https://github.com/Sanjeev4523/eventplanner-backend)
+
 Note: Tutorial Used class based components with lifecylce methods. This repo used functinal components with hooks.
 
 ## Available Scripts
