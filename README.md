@@ -1,4 +1,4 @@
-# EVENT Planner Frontend
+# Event Planner Frontend
 
 React GraphQL Basd frontend for an event planner App
 Bootstrapped with create-reacta-app
